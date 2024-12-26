@@ -1,0 +1,60 @@
+# Python virtual environment
+venv/
+env/
+ENV/
+.env
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+*.egg
+
+# PyInstaller
+*.manifest
+*.spec
+
+# IDEs and editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*.swn
+.DS_Store
+
+# Logs and databases
+*.log
+*.sqlite3
+*.db
+
+# Scrapy stuff
+.scrapy
+
+# Screenshots and temporary files
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.pdf
+*.txt
+
+# Project-specific files
+cookies.json
+test_output/
+debug/
+
+# Local development settings
+local_settings.py
+settings.local.py
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
