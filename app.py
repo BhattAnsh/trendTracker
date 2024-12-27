@@ -33,49 +33,44 @@ def setup_driver():
     options = Options()
     
     # Headless mode configuration
-    options.add_argument("--headless=new")  # Modern headless mode
-    
-    # Window size is important even in headless mode for proper rendering
-    options.add_argument("--window-size=1920,1080")
-    
-    # Additional necessary arguments for headless operation
-    options.add_argument("--disable-gpu")  # Required for some Windows systems
-    options.add_argument("--disable-blink-features=AutomationControlled")
+    options.add_argument("--headless=new")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     
-    # Additional arguments to make headless mode more stable
-    options.add_argument("--disable-extensions")
-    options.add_argument("--disable-setuid-sandbox")
-    options.add_argument("--disable-infobars")
+    # Set window size for consistent rendering
+    options.add_argument("--window-size=1920,1080")
     
-    # Setting user agent to avoid detection
+    # Additional necessary arguments for stable operation
+    options.add_argument("--disable-gpu")
+    options.add_argument("--disable-extensions")
+    options.add_argument("--disable-infobars")
+    options.add_argument("--disable-blink-features=AutomationControlled")
+    
+    # Setting user agent
     options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
     
-    # Existing automation settings
-    options.add_experimental_option("excludeSwitches", ["enable-automation"])
-    options.add_experimental_option("useAutomationExtension", False)
-    
-    # Preferences for downloads and credentials
+    # Browser preferences
     prefs = {
-        "download.default_directory": "./",
         "credentials_enable_service": False,
         "profile.password_manager_enabled": False,
-        # Additional preferences for headless mode
-        "profile.default_content_setting_values.notifications": 2  # Disable notifications
+        "profile.default_content_setting_values.notifications": 2
     }
     options.add_experimental_option("prefs", prefs)
+    options.add_experimental_option("excludeSwitches", ["enable-automation"])
+    options.add_experimental_option("useAutomationExtension", False)
 
-    # Initialize the Chrome driver with headless options
-    driver = webdriver.Chrome(
-        service=Service(ChromeDriverManager().install()),
-        options=options
-    )
+    # Initialize Chrome driver with binary location
+    options.binary_location = "/usr/bin/google-chrome"
     
-    # Set page load timeout
-    driver.set_page_load_timeout(30)
-    
-    return driver
+    try:
+        driver = webdriver.Chrome(
+            options=options
+        )
+        driver.set_page_load_timeout(30)
+        return driver
+    except Exception as e:
+        print(f"Error creating driver: {str(e)}")
+        raise
 
 def save_cookies(driver):
     """Save cookies to a file."""
