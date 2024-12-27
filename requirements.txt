@@ -1,7 +1,9 @@
 fastapi
 uvicorn
+pymongo
 selenium
-webdriver_manager
-apscheduler
-pydantic
-pymongog
+webdriver-manager
+jinja2
+python-multipart
+python-dotenv
+chromium-chromedriver

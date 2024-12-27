@@ -13,6 +13,7 @@ from selenium.webdriver.support import expected_conditions as EC
 import json
 import os
 import time
+from dotenv import load_dotenv
 
 app = FastAPI()
 
@@ -21,7 +22,8 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
 # MongoDB connection
-mongo_uri = os.environ['MONGO_URI']
+
+mongo_uri = os.getenv('MONGO_URI', 'fallback_uri')
 client = MongoClient(mongo_uri)
 db = client["twitter_data"]
 collection = db["trends"]
@@ -162,6 +164,12 @@ def login_and_get_cookies(driver):
     except Exception as e:
         print(f"Login error: {str(e)}")
         raise
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for Railway deployment."""
+    return {"status": "healthy", "timestamp": time.time()}
+
 
 @app.get("/get-tweets")
 async def get_past_tweets():
