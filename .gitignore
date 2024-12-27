@@ -1,60 +1,51 @@
-# Python virtual environment
-venv/
-env/
-ENV/
-.env
-
-# Python cache files
+# Ignore Python cache and compiled files
 __pycache__/
 *.py[cod]
-*$py.class
+*.pyo
+*.pyd
 
-# Distribution / packaging
-dist/
-build/
-*.egg-info/
-*.egg
+# Ignore virtual environment folder
+venv/
 
-# PyInstaller
-*.manifest
-*.spec
+# Ignore database or data folder contents
+data/
+db/
 
-# IDEs and editors
-.idea/
-.vscode/
-*.swp
-*.swo
-*.swn
-.DS_Store
-
-# Logs and databases
-*.log
-*.sqlite3
-*.db
-
-# Scrapy stuff
-.scrapy
-
-# Screenshots and temporary files
-*.png
-*.jpg
-*.jpeg
-*.gif
-*.pdf
-*.txt
-
-# Project-specific files
+# Ignore cookies and sensitive JSON files
 cookies.json
-test_output/
-debug/
 
-# Local development settings
-local_settings.py
-settings.local.py
+# Ignore system files
+.DS_Store
+Thumbs.db
 
-# Coverage reports
-htmlcov/
-.coverage
-.coverage.*
-coverage.xml
-*.cover
+# Ignore static assets generated during runtime
+static/*
+
+# Ignore Python package and dependency files
+*.egg-info/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Ignore IDE-specific settings (VSCode in this case)
+.vscode/
+.idea/
+
+# Ignore logs and temp files
+*.log
+*.tmp
+*.bak
+*.swp
+
+# Ignore compiled HTML templates
+*.html.__pycache__
+
+# Ignore all contents of the data/db directory
+**/data/
+
+# If you need to keep certain files in data/db, whitelist them like this:
+# !data/db/keep_this_file.txt
+
+
+#environment variable
+
+/.env.local

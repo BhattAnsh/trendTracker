@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Twitter Trends</title>
+    <style>
+        :root {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --accent-color: #1d9bf0;
+            --accent-hover: #1a8cd8;
+            --border-color: #404040;
+            --card-bg: #242424;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: all 0.2s ease;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(45deg, var(--accent-color), #00b4d8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        button {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 999px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transform: translateY(0);
+        }
+
+        button:hover {
+            background-color: var(--accent-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1400px;
+            margin: 2rem auto;
+        }
+
+        .section {
+            background: var(--card-bg);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            height: 600px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent-color) var(--bg-secondary);
+        }
+
+        .section::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .section::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+            border-radius: 10px;
+        }
+
+        .section::-webkit-scrollbar-thumb {
+            background: var(--accent-color);
+            border-radius: 10px;
+        }
+
+        .section h2 {
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .tweet-group {
+            background: var(--bg-secondary);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .tweet-group h3 {
+            color: var(--accent-color);
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .tweet {
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            transition: transform 0.2s ease;
+        }
+
+        .tweet:hover {
+            transform: translateX(5px);
+            color: var(--text-primary);
+            background: rgba(29, 155, 240, 0.1);
+            border-radius: 0.5rem;
+        }
+
+        .tweet:last-child {
+            border-bottom: none;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .section {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Twitter Trends Scraper</h1>
+        <button onclick="fetchTweets()">Fetch Latest Trends</button>
+    </div>
+    <div class="container">
+        <div class="section" id="past-data">
+            <h2>Past Data</h2>
+            <div id="past-results"></div>
+        </div>
+        <div class="section" id="present-data">
+            <h2>Present Data</h2>
+            <div id="present-results"></div>
+        </div>
+    </div>
+    <script>
+        // Previous fetchPastTweets function remains the same
+        async function fetchPastTweets() {
+            const pastResultsDiv = document.getElementById('past-results');
+            pastResultsDiv.innerHTML = '<p>Loading past fetched data...</p>';
+            
+            try {
+                const response = await fetch('/get-tweets');
+                const data = await response.json();
+
+                if (data.status === "success" && Array.isArray(data.data)) {
+                    displayGroupedTweets(data.data, pastResultsDiv);
+                } else {
+                    pastResultsDiv.innerHTML = '<p>No past data available.</p>';
+                }
+            } catch (error) {
+                pastResultsDiv.innerHTML = '<p>Error fetching past tweets.</p>';
+            }
+        }
+
+        // Modified fetchTweets function to properly handle moving data
+        async function fetchTweets() {
+            const presentResultsDiv = document.getElementById('present-results');
+            const pastResultsDiv = document.getElementById('past-results');
+
+            // Instead of copying HTML, we'll create a new group with the current data
+            const currentTweets = [];
+            const tweetElements = presentResultsDiv.querySelectorAll('.tweet');
+            tweetElements.forEach(tweetEl => {
+                const tweetText = tweetEl.innerText;
+                const tweetNumber = tweetText.split(':')[0].replace('Tweet ', '');
+                currentTweets.push({
+                    tweet_number: tweetNumber,
+                    text: tweetText.split(':').slice(1).join(':').trim()
+                });
+            });
+
+            // If there are current tweets, create a new group in past data
+            if (currentTweets.length > 0) {
+                const groupData = {
+                    ip_address: 'Previous Fetch',
+                    tweets: currentTweets
+                };
+                
+                // Create and prepend the new group
+                const newGroup = createTweetGroup(groupData);
+                pastResultsDiv.insertBefore(newGroup, pastResultsDiv.firstChild);
+            }
+
+            // Show loading message in present section
+            presentResultsDiv.innerHTML = '<p>Fetching new tweets, please wait...</p>';
+            
+            try {
+                const response = await fetch('/scrape-tweets');
+                const data = await response.json();
+
+                if (data.status === "success" && Array.isArray(data.tweets)) {
+                    displayTweets(data.tweets, presentResultsDiv);
+                } else {
+                    presentResultsDiv.innerHTML = '<p>Error fetching new tweets.</p>';
+                }
+            } catch (error) {
+                presentResultsDiv.innerHTML = '<p>Failed to fetch tweets. Please try again later.</p>';
+            }
+        }
+
+        // New helper function to create a tweet group
+        function createTweetGroup(groupData) {
+            const groupDiv = document.createElement('div');
+            groupDiv.className = 'tweet-group';
+            groupDiv.style.marginBottom = "20px";
+
+            const ipHeading = document.createElement('h3');
+            ipHeading.innerText = `IP Address: ${groupData.ip_address}`;
+            groupDiv.appendChild(ipHeading);
+
+            groupData.tweets.forEach(tweet => {
+                const tweetDiv = document.createElement('div');
+                tweetDiv.className = 'tweet';
+                tweetDiv.innerText = `Tweet ${tweet.tweet_number}: ${tweet.text}`;
+                groupDiv.appendChild(tweetDiv);
+            });
+
+            return groupDiv;
+        }
+
+        // Modified displayGroupedTweets to use the new helper function
+        function displayGroupedTweets(groups, container) {
+            container.innerHTML = '';
+            groups.forEach(group => {
+                const groupDiv = createTweetGroup(group);
+                container.appendChild(groupDiv);
+            });
+        }
+
+        // Modified displayTweets function to ensure consistent styling
+        function displayTweets(tweets, container) {
+            container.innerHTML = '';
+            const groupData = {
+                ip_address: 'Current Fetch',
+                tweets: tweets
+            };
+            const groupDiv = createTweetGroup(groupData);
+            container.appendChild(groupDiv);
+        }
+
+        // Load past data on page load
+        window.onload = fetchPastTweets;
+    </script>
+</body>
+</html>
