@@ -38,6 +38,8 @@ RUN apt-get update -qq -y && \
 # Set up the working directory for the application
 WORKDIR /app
 
+RUN mkdir -p static
+
 # Install Python dependencies
 # We copy requirements first to leverage Docker's cache layer system
 COPY requirements.txt .

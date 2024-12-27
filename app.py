@@ -13,7 +13,6 @@ from selenium.webdriver.support import expected_conditions as EC
 import json
 import os
 import time
-from dotenv import load_dotenv
 
 app = FastAPI()
 
@@ -22,8 +21,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
 # MongoDB connection
-
-mongo_uri = os.getenv('MONGO_URI', 'fallback_uri')
+mongo_uri = os.environ['MONGO_URI']
 client = MongoClient(mongo_uri)
 db = client["twitter_data"]
 collection = db["trends"]
@@ -33,44 +31,49 @@ def setup_driver():
     options = Options()
     
     # Headless mode configuration
-    options.add_argument("--headless=new")
+    options.add_argument("--headless=new")  # Modern headless mode
+    
+    # Window size is important even in headless mode for proper rendering
+    options.add_argument("--window-size=1920,1080")
+    
+    # Additional necessary arguments for headless operation
+    options.add_argument("--disable-gpu")  # Required for some Windows systems
+    options.add_argument("--disable-blink-features=AutomationControlled")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     
-    # Set window size for consistent rendering
-    options.add_argument("--window-size=1920,1080")
-    
-    # Additional necessary arguments for stable operation
-    options.add_argument("--disable-gpu")
+    # Additional arguments to make headless mode more stable
     options.add_argument("--disable-extensions")
+    options.add_argument("--disable-setuid-sandbox")
     options.add_argument("--disable-infobars")
-    options.add_argument("--disable-blink-features=AutomationControlled")
     
-    # Setting user agent
+    # Setting user agent to avoid detection
     options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
     
-    # Browser preferences
-    prefs = {
-        "credentials_enable_service": False,
-        "profile.password_manager_enabled": False,
-        "profile.default_content_setting_values.notifications": 2
-    }
-    options.add_experimental_option("prefs", prefs)
+    # Existing automation settings
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
     options.add_experimental_option("useAutomationExtension", False)
-
-    # Initialize Chrome driver with binary location
-    options.binary_location = "/usr/bin/google-chrome"
     
-    try:
-        driver = webdriver.Chrome(
-            options=options
-        )
-        driver.set_page_load_timeout(30)
-        return driver
-    except Exception as e:
-        print(f"Error creating driver: {str(e)}")
-        raise
+    # Preferences for downloads and credentials
+    prefs = {
+        "download.default_directory": "./",
+        "credentials_enable_service": False,
+        "profile.password_manager_enabled": False,
+        # Additional preferences for headless mode
+        "profile.default_content_setting_values.notifications": 2  # Disable notifications
+    }
+    options.add_experimental_option("prefs", prefs)
+
+    # Initialize the Chrome driver with headless options
+    driver = webdriver.Chrome(
+        service=Service(ChromeDriverManager().install()),
+        options=options
+    )
+    
+    # Set page load timeout
+    driver.set_page_load_timeout(30)
+    
+    return driver
 
 def save_cookies(driver):
     """Save cookies to a file."""
@@ -159,12 +162,6 @@ def login_and_get_cookies(driver):
     except Exception as e:
         print(f"Login error: {str(e)}")
         raise
-
-@app.get("/health")
-async def health_check():
-    """Health check endpoint for Railway deployment."""
-    return {"status": "healthy", "timestamp": time.time()}
-
 
 @app.get("/get-tweets")
 async def get_past_tweets():
