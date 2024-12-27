@@ -19,7 +19,7 @@ cookies.json
 Thumbs.db
 
 # Ignore static assets generated during runtime
-static/*
+
 
 # Ignore Python package and dependency files
 *.egg-info/
